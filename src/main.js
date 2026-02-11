@@ -1,8 +1,17 @@
 import "./style.css";
-import "./ui.js";
-import { start, setDirection } from "./engine.js";
+import { startBtn } from "./ui.js";
+import { start, setDirection, togglePause, isRunning } from "./engine.js";
+
+startBtn.addEventListener("click", () => {
+  start();
+});
 
 document.addEventListener("keydown", (e) => {
+  if (e.key === " " && isRunning()) {
+    togglePause();
+    return;
+  }
+
   const directions = {
     ArrowUp: { x: 0, y: -1 },
     ArrowDown: { x: 0, y: 1 },
@@ -14,5 +23,3 @@ document.addEventListener("keydown", (e) => {
     setDirection(directions[e.key]);
   }
 });
-
-start();

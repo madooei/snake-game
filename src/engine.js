@@ -1,16 +1,18 @@
 export const GRID_SIZE = 20;
 const TICK_RATE = 150;
 
-let snake = [
+const INITIAL_SNAKE = [
   { x: 10, y: 10 },
   { x: 9, y: 10 },
   { x: 8, y: 10 },
 ];
 
+let snake = [];
 let direction = { x: 1, y: 0 };
-let food = placeFood();
+let food = null;
 let score = 0;
 let gameOver = false;
+let running = false;
 let intervalId = null;
 
 function placeFood() {
@@ -47,6 +49,10 @@ function emit(name, detail = {}) {
   document.dispatchEvent(new CustomEvent(name, { detail }));
 }
 
+function emitState() {
+  emit("snake:tick", { snake: [...snake], food: { ...food }, gameOver });
+}
+
 function update() {
   const head = snake[0];
   const newHead = {
@@ -56,6 +62,7 @@ function update() {
 
   if (checkCollision(newHead)) {
     gameOver = true;
+    running = false;
     clearInterval(intervalId);
     emit("snake:die", { score });
     return;
@@ -74,18 +81,46 @@ function update() {
 
 function tick() {
   update();
-  emit("snake:tick", { snake: [...snake], food: { ...food }, gameOver });
+  emitState();
+}
+
+function reset() {
+  snake = INITIAL_SNAKE.map((seg) => ({ ...seg }));
+  direction = { x: 1, y: 0 };
+  food = placeFood();
+  score = 0;
+  gameOver = false;
+  running = false;
+  clearInterval(intervalId);
 }
 
 export function setDirection(newDirection) {
-  // Prevent reversing
   if (newDirection.x !== 0 && direction.x !== 0) return;
   if (newDirection.y !== 0 && direction.y !== 0) return;
   direction = newDirection;
 }
 
 export function start() {
-  // Emit an initial tick so the UI renders the starting state
-  emit("snake:tick", { snake: [...snake], food: { ...food }, gameOver });
+  reset();
+  running = true;
+  emit("snake:start");
+  emitState();
   intervalId = setInterval(tick, TICK_RATE);
+}
+
+export function togglePause() {
+  if (gameOver || !running) return;
+
+  if (intervalId) {
+    clearInterval(intervalId);
+    intervalId = null;
+    emit("snake:pause");
+  } else {
+    intervalId = setInterval(tick, TICK_RATE);
+    emit("snake:resume");
+  }
+}
+
+export function isRunning() {
+  return running && !gameOver;
 }
