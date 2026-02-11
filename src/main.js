@@ -28,6 +28,10 @@ let direction = { x: 1, y: 0 };
 // Food position
 let food = placeFood();
 
+// Game state
+let gameOver = false;
+let intervalId = null;
+
 function placeFood() {
   let position;
   do {
@@ -39,6 +43,28 @@ function placeFood() {
   return position;
 }
 
+function checkCollision(position) {
+  // Wall collision
+  if (
+    position.x < 0 ||
+    position.x >= GRID_SIZE ||
+    position.y < 0 ||
+    position.y >= GRID_SIZE
+  ) {
+    return true;
+  }
+
+  // Self collision (check against all segments except the tail,
+  // which will be removed this tick)
+  for (let i = 0; i < snake.length - 1; i++) {
+    if (snake[i].x === position.x && snake[i].y === position.y) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function update() {
   // Calculate the new head position
   const head = snake[0];
@@ -46,6 +72,13 @@ function update() {
     x: head.x + direction.x,
     y: head.y + direction.y,
   };
+
+  // Check for collisions
+  if (checkCollision(newHead)) {
+    gameOver = true;
+    clearInterval(intervalId);
+    return;
+  }
 
   // Add new head to the front
   snake.unshift(newHead);
@@ -80,6 +113,11 @@ function draw() {
       }
     }
   });
+
+  // Show game over overlay
+  if (gameOver) {
+    board.classList.add("game-over");
+  }
 }
 
 document.addEventListener("keydown", (e) => {
@@ -105,4 +143,4 @@ function gameLoop() {
 }
 
 draw();
-setInterval(gameLoop, TICK_RATE);
+intervalId = setInterval(gameLoop, TICK_RATE);
