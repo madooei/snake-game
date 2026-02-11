@@ -29,8 +29,11 @@ let direction = { x: 1, y: 0 };
 let food = placeFood();
 
 // Game state
+let score = 0;
 let gameOver = false;
 let intervalId = null;
+
+const scoreDisplay = document.getElementById("score");
 
 function placeFood() {
   let position;
@@ -86,6 +89,8 @@ function update() {
   // Check if snake ate food
   if (newHead.x === food.x && newHead.y === food.y) {
     // Don't remove the tail — the snake grows
+    score += 10;
+    scoreDisplay.textContent = `Score: ${score}`;
     food = placeFood();
   } else {
     // Remove the tail
