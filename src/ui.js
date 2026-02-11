@@ -2,7 +2,12 @@ import { GRID_SIZE } from "./engine.js";
 
 const board = document.getElementById("board");
 const scoreDisplay = document.getElementById("score");
+const highScoreDisplay = document.getElementById("high-score");
 const startBtn = document.getElementById("start-btn");
+
+// Load high score from localStorage
+let highScore = Number(localStorage.getItem("snake-high-score")) || 0;
+highScoreDisplay.textContent = `Best: ${highScore}`;
 
 // Create the grid cells
 const cells = [];
@@ -55,6 +60,13 @@ document.addEventListener("snake:start", () => {
 document.addEventListener("snake:die", (e) => {
   board.classList.add("game-over");
   startBtn.textContent = "Play Again";
+
+  // Update high score
+  if (e.detail.score > highScore) {
+    highScore = e.detail.score;
+    localStorage.setItem("snake-high-score", highScore);
+    highScoreDisplay.textContent = `Best: ${highScore}`;
+  }
 });
 
 document.addEventListener("snake:pause", () => {

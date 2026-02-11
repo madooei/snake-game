@@ -25,10 +25,15 @@ body {
   gap: 20px;
 }
 
-#score {
+#score,
+#high-score {
   color: #eee;
   font-family: monospace;
   font-size: 1.2rem;
+}
+
+#high-score {
+  color: #aaa;
 }
 
 #start-btn {

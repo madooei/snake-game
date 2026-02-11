@@ -1,5 +1,7 @@
 export const GRID_SIZE = 20;
-const TICK_RATE = 150;
+const BASE_TICK_RATE = 150;
+const MIN_TICK_RATE = 75;
+const SPEED_INCREMENT = 5;
 
 const INITIAL_SNAKE = [
   { x: 10, y: 10 },
@@ -45,6 +47,16 @@ function checkCollision(position) {
   return false;
 }
 
+function currentTickRate() {
+  const speedUps = Math.floor(score / 50);
+  return Math.max(MIN_TICK_RATE, BASE_TICK_RATE - speedUps * SPEED_INCREMENT);
+}
+
+function restartInterval() {
+  clearInterval(intervalId);
+  intervalId = setInterval(tick, currentTickRate());
+}
+
 function emit(name, detail = {}) {
   document.dispatchEvent(new CustomEvent(name, { detail }));
 }
@@ -74,6 +86,8 @@ function update() {
     score += 10;
     food = placeFood();
     emit("snake:eat", { score });
+    // Speed up the game
+    restartInterval();
   } else {
     snake.pop();
   }
@@ -105,7 +119,7 @@ export function start() {
   running = true;
   emit("snake:start");
   emitState();
-  intervalId = setInterval(tick, TICK_RATE);
+  intervalId = setInterval(tick, currentTickRate());
 }
 
 export function togglePause() {
@@ -116,7 +130,7 @@ export function togglePause() {
     intervalId = null;
     emit("snake:pause");
   } else {
-    intervalId = setInterval(tick, TICK_RATE);
+    intervalId = setInterval(tick, currentTickRate());
     emit("snake:resume");
   }
 }
