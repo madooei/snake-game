@@ -8,10 +8,17 @@ let snake = [
 ];
 
 let direction = { x: 1, y: 0 };
-let food = placeFood();
+let food = null;
+let poison = null;
 let score = 0;
 let gameOver = false;
 let intervalId = null;
+
+// Placement functions are defined below via hoisting;
+// we call them here so both food and poison exist before either
+// placement function checks for the other.
+food = placeFood();
+poison = placePoison();
 
 function placeFood() {
   let position;
@@ -20,7 +27,24 @@ function placeFood() {
       x: Math.floor(Math.random() * GRID_SIZE),
       y: Math.floor(Math.random() * GRID_SIZE),
     };
-  } while (snake.some((seg) => seg.x === position.x && seg.y === position.y));
+  } while (
+    snake.some((seg) => seg.x === position.x && seg.y === position.y) ||
+    (poison && position.x === poison.x && position.y === poison.y)
+  );
+  return position;
+}
+
+function placePoison() {
+  let position;
+  do {
+    position = {
+      x: Math.floor(Math.random() * GRID_SIZE),
+      y: Math.floor(Math.random() * GRID_SIZE),
+    };
+  } while (
+    snake.some((seg) => seg.x === position.x && seg.y === position.y) ||
+    (food && position.x === food.x && position.y === food.y)
+  );
   return position;
 }
 
@@ -67,6 +91,17 @@ function update() {
     score += 10;
     food = placeFood();
     emit("snake:eat", { score });
+  } else if (newHead.x === poison.x && newHead.y === poison.y) {
+    snake.pop();
+    if (snake.length <= 1) {
+      gameOver = true;
+      clearInterval(intervalId);
+      emit("snake:die", { score });
+      return;
+    }
+    snake.pop();
+    poison = placePoison();
+    emit("snake:poison");
   } else {
     snake.pop();
   }
@@ -74,7 +109,12 @@ function update() {
 
 function tick() {
   update();
-  emit("snake:tick", { snake: [...snake], food: { ...food }, gameOver });
+  emit("snake:tick", {
+    snake: [...snake],
+    food: { ...food },
+    poison: { ...poison },
+    gameOver,
+  });
 }
 
 export function setDirection(newDirection) {
@@ -86,6 +126,11 @@ export function setDirection(newDirection) {
 
 export function start() {
   // Emit an initial tick so the UI renders the starting state
-  emit("snake:tick", { snake: [...snake], food: { ...food }, gameOver });
+  emit("snake:tick", {
+    snake: [...snake],
+    food: { ...food },
+    poison: { ...poison },
+    gameOver,
+  });
   intervalId = setInterval(tick, TICK_RATE);
 }

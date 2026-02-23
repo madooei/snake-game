@@ -12,15 +12,19 @@ for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
   cells.push(cell);
 }
 
-function render(snake, food) {
+function render(snake, food, poison) {
   // Clear all cells
   cells.forEach((cell) =>
-    cell.classList.remove("snake", "snake-head", "food"),
+    cell.classList.remove("snake", "snake-head", "food", "poison"),
   );
 
   // Draw the food
   const foodIndex = food.y * GRID_SIZE + food.x;
   cells[foodIndex].classList.add("food");
+
+  // Draw the poison
+  const poisonIndex = poison.y * GRID_SIZE + poison.x;
+  cells[poisonIndex].classList.add("poison");
 
   // Draw the snake
   snake.forEach((segment, index) => {
@@ -37,8 +41,8 @@ function render(snake, food) {
 // --- Event Listeners ---
 
 document.addEventListener("snake:tick", (e) => {
-  const { snake, food } = e.detail;
-  render(snake, food);
+  const { snake, food, poison } = e.detail;
+  render(snake, food, poison);
 });
 
 document.addEventListener("snake:eat", (e) => {
