@@ -7,7 +7,6 @@ A classic Snake game built with Event-Driven Programming in JavaScript using DOM
 - Build a complete Snake game using Event-Driven Programming
 - Use custom events to decouple game logic from UI updates
 - Handle keyboard events for user input
-- Apply OOP and modular design with ES6 modules
 
 ## Getting Started
 
